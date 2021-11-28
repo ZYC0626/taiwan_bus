@@ -646,10 +646,15 @@
     padding: 0;
 }
 .estimate-near-list-item {
+    cursor: pointer;
     display: flex;
     align-items: center;
     padding: 13px 0;
     border-bottom: 1px solid #E7E7E7;
+    transition: all 0.2s linear;
+    &:hover{
+        background:#E7E7E7;
+    }
     .info {
         padding-left: 10px;
         .title {

@@ -211,7 +211,7 @@ export default {
         }
       )
         .then((response) => {
-          console.log(response.data)
+          // console.log(response.data)
           this.routeList = response.data
         })
         .catch((err) => {
@@ -260,7 +260,7 @@ export default {
         }
       )
         .then((response) => {
-          console.log(response.data)
+          // console.log(response.data)
           response.data.forEach((x) => {
             if (x.Direction === 0) {
               this.stopOfRouteTo.forEach((route) => {
@@ -294,7 +294,7 @@ export default {
         }
       )
         .then((response) => {
-          console.log(response.data)
+          // console.log(response.data)
           response.data.forEach((bus) => {
             if (bus.Direction === 0) {
               this.stopOfRouteTo.forEach((route) => {
@@ -404,10 +404,9 @@ export default {
       // openStreetMap.setView([tempData[0].StopPosition.PositionLat, tempData[0].StopPosition.PositionLon], 14)
     },
     zoomLevelAddMarker () {
-      // console.log(this.city)
       if (this.stopOfRouteTo.length > 0 && this.stopOfRouteBack.length > 0) {
         const zoomLevel = openStreetMap.getZoom()
-        console.log(zoomLevel)
+        // console.log(zoomLevel)
         if (zoomLevel <= 15) {
           this.addRouteMarker()
         } else {
@@ -527,10 +526,24 @@ export default {
         document.querySelector('.route-search-area').classList.remove('active')
         document.querySelector('.route-stop-area').classList.add('active')
       }
+    },
+    getParam () {
+      const pstr = '' + this.$route.params.queryString
+      const pjson = JSON.parse(pstr)
+      this.city = pjson.city
+      if (pjson.route && pjson.routeUID) {
+        this.selectRoute = pjson.route
+        this.selectRouteUID = pjson.routeUID
+        this.toOrBack = pjson.direction === 0 ? 'to' : 'back'
+        this.toRouteDetail(this.selectRoute, this.selectRouteUID)
+        this.panToPosition(pjson.LatLon[0], pjson.LatLon[1])
+        // console.log(pjson.LatLon[0], pjson.LatLon[1])
+      }
+      // console.log(pjson)
     }
   },
   mounted () {
-    this.city = this.$route.params.city
+    // this.city = this.$route.params.city
     // quick start
     openStreetMap = $L.map('map', {
       zoomControl: false,
@@ -554,6 +567,7 @@ export default {
     openStreetMap.on('zoomend', function () {
       func()
     })
+    this.getParam()
   }
 }
 </script>

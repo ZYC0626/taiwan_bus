@@ -58,7 +58,8 @@
         </div>
         <div class="estimate-near-body">
           <ul class="estimate-near-list">
-            <li class="estimate-near-list-item" v-for="item in EstimateNearList" :key="item.StopUID">
+            <li class="estimate-near-list-item" v-for="item in EstimateNearList" :key="item.StopUID"
+            @click="toRouteDetail(item)">
               <!-- <div class="time">{{ $filters.toMinute(item.EstimateTime) }} 分</div> -->
               <div class="time" :class="{ active : item.EstimateTime <= 180 , 'disconnect': item.StopStatus !== 0}">
                 <span v-if="item.StopStatus === 0">
@@ -127,6 +128,7 @@ export default {
       EstimateNearList: [],
       selectStationName: '',
       selectStationUID: '',
+      selectStationLatLon: [],
       mobileTool: 'station'
     }
   },
@@ -236,9 +238,6 @@ export default {
       this.getEstimatedTimeOfArrival(item)
       document.querySelector('.near-station-area').classList.remove('active')
       document.querySelector('.estimate-near-area').classList.add('active')
-      if (window.innerWidth < 768) {
-        // this.showArea('map')
-      }
     },
     zoomLevelAddMarker () {
       const zoomLevel = openStreetMap.getZoom()
@@ -311,7 +310,6 @@ export default {
         }
       )
         .then((response) => {
-          // console.log(response.data)
           this.EstimateNearList.forEach((stop) => {
             response.data.forEach((x) => {
               if (stop.RouteUID === x.RouteUID) {
@@ -325,9 +323,10 @@ export default {
           this.EstimateNearList.sort((a, b) => {
             return a.RouteName.Zh_tw - b.RouteName.Zh_tw
           })
-          console.log(this.EstimateNearList)
+          // console.log(this.EstimateNearList)
           this.selectStationName = item.StationName.Zh_tw
           this.selectStationUID = item.StationUID
+          this.selectStationLatLon = [item.StationPosition.PositionLat, item.StationPosition.PositionLon]
         })
         .catch((err) => {
           console.log(err)
@@ -351,6 +350,18 @@ export default {
         document.querySelector('.near-station-area').classList.remove('active')
         document.querySelector('.estimate-near-area').classList.add('active')
       }
+    },
+    toRouteDetail (item) {
+      console.log(item)
+      const param = {
+        city: item.City,
+        route: item.RouteName.Zh_tw,
+        routeUID: item.RouteUID,
+        direction: item.Direction,
+        LatLon: this.selectStationLatLon
+      }
+      const qStr = JSON.stringify(param)
+      this.$router.push(`/BusSearch/${qStr}`)
     }
   },
   mounted () {

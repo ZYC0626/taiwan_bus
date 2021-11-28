@@ -11,12 +11,16 @@ const routes = [
         component: () => import('../views/Index.vue')
       },
       {
-        path: 'BusSearch/:city',
+        path: 'BusSearch/:queryString',
         component: () => import('../views/BusSearch.vue')
       },
       {
         path: 'NearbyStation/',
         component: () => import('../views/NearbyStation.vue')
+      },
+      {
+        path: 'StopSearch/',
+        component: () => import('../views/StopSearch.vue')
       }
     ]
   }

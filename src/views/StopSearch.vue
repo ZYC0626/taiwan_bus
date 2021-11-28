@@ -9,7 +9,7 @@
     <div class="map-wrap">
       <div class="route-search-area active">
         <div class="route-search-header">
-          <!-- <input type="search" class="form-control" id="stationName" placeholder="想去哪裡?"> -->
+          <input type="search" class="form-control" id="stationName" placeholder="想去哪裡?">
         </div>
         <div class="route-search-body">
           <ul class="route-list">
