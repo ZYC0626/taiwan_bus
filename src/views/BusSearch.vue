@@ -41,7 +41,7 @@
               <div class="d-flex justify-content-between">
                 <div class="title">{{ item.RouteName.Zh_tw }}</div>
                 <div class="icon">
-                  <a href="#"><span class="material-icons">
+                  <a><span class="material-icons">
                   favorite_border
                   </span></a>
                 </div>

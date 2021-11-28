@@ -77,7 +77,7 @@
                 <div class="way" v-else>往 {{ item.DepartureStopNameZh  }}</div>
               </div>
               <div class="icon ms-auto">
-                <a href="#"><span class="material-icons">
+                <a><span class="material-icons">
                 favorite_border
                 </span></a>
                 {{ item.City }}
