@@ -152,7 +152,8 @@ export default {
       })
     },
     getNearbyStation (Lat, Lon) {
-      const url = 'https://ptx.transportdata.tw/MOTC/v2/Bus/Station/NearBy?$spatialFilter=nearby(25.0544128%2C%20121.454592%2C%201000)&$format=JSON'
+      const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Station/NearBy?$spatialFilter=nearby(${Lat}%2C%20${Lon}%2C%201000)&$format=JSON`
+      console.log('目前位置', Lat, Lon)
       // https://ptx.transportdata.tw/MOTC/v2/Bus/EstimatedTimeOfArrival/City/Taipei/PassThrough/Station/3505?$top=30&$format=JSON
       this.axios.get(url,
         {
