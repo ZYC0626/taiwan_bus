@@ -60,11 +60,12 @@
         <span class="material-icons">chevron_left</span>
         返回搜尋</a>
         <div class="refresh-bar">
-        <a href="#" class="refresh ms-auto"
-        @click.prevent="getStopOfRoute()">
-        <span class="material-icons">autorenew</span>
-        立即更新
-        </a>
+          <div class="time">{{ refreshTime }} 秒後更新</div>
+          <a href="#" class="refresh ms-auto"
+          @click.prevent="getStopOfRoute()">
+          <span class="material-icons">autorenew</span>
+          立即更新
+          </a>
       </div>
         <div class="route-stop-header">
           <div class="route-name">
@@ -199,7 +200,9 @@ export default {
       locationMarkerID: '',
       walkBusMarker: [],
       stopMarker: [],
-      mobileTool: 'route'
+      mobileTool: 'route',
+      timer: null,
+      refreshTime: 0
     }
   },
   methods: {
@@ -231,6 +234,8 @@ export default {
       document.querySelector('.route-stop-area').classList.remove('active')
     },
     getStopOfRoute () {
+      if (this.timer) clearInterval(this.timer)
+      this.timeCountDown(21)
       const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/StopOfRoute/City/${this.city}?$filter=RouteUID%20eq%20'${this.selectRouteUID}'&$format=JSON`
       this.axios.get(url,
         {
@@ -540,6 +545,19 @@ export default {
         // console.log(pjson.LatLon[0], pjson.LatLon[1])
       }
       // console.log(pjson)
+    },
+    timeCountDown (time) {
+      let timeRemaining = time
+      this.timer = setInterval(() => {
+        if (timeRemaining > 0) {
+          timeRemaining--
+          // console.log(timeRemaining)
+          this.refreshTime = timeRemaining
+        } else {
+          clearInterval(this.timer)
+          this.getStopOfRoute()
+        }
+      }, 1000)
     }
   },
   mounted () {
@@ -568,6 +586,9 @@ export default {
       func()
     })
     this.getParam()
+  },
+  unmounted () {
+    if (this.timer) clearInterval(this.timer)
   }
 }
 </script>
