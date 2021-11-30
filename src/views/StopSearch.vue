@@ -4,9 +4,9 @@
   </Loading>
   <div class="h-100 d-flex flex-column">
     <div class="bread-bar">
-      <ol class="breadcrumb m-0 d-md-flex d-none">
+      <ol class="breadcrumb m-0">
         <li class="breadcrumb-item"><a href="#">首頁</a></li>
-        <li class="breadcrumb-item active" aria-current="page">附近站牌</li>
+        <li class="breadcrumb-item active" aria-current="page">站點查詢</li>
       </ol>
     </div>
     <div class="map-wrap">
@@ -16,27 +16,36 @@
           @change="getAllStationFromCity()">
             <option :value="city.City" v-for="city in cityList" :key="city.City">{{ city.CityName }}</option>
           </select>
-          <input list="datalistOptions" class="form-control" id="stationName" placeholder="想去哪裡?">
+          <input list="datalistOptions" class="form-control" id="stationName" placeholder="想去哪裡?"
+          v-model="selectStationName"
+          @change="getStationData()">
           <datalist id="datalistOptions">
-            <option :value="option.StationName.Zh_tw" v-for="option in optiondata" :key="option.StationUID"></option>
+            <option :value="option" v-for="(option, index) in optiondata" :key="index"></option>
           </datalist>
         </div>
         <div class="route-search-body">
           <ul class="route-list">
-            <!-- <li class="route-list-item" v-for="item in routeList" :key="item.RouteUID">
+            <li class="route-list-item" v-for="item in selectRouteData" :key="item.RouteUID"
+            @click="toRouteDetail(item)">
               <div class="d-flex justify-content-between">
                 <div class="title">{{ item.RouteName.Zh_tw }}</div>
                 <div class="icon">
-                  <a href="#"><span class="material-icons">
-                  favorite_border
-                  </span></a>
+                  <a href="#"
+                  @click.prevent="updateLikes(item)">
+                  <span class="material-icons love" v-if="buslikesId.includes(item.RouteUID)">
+                    favorite
+                  </span>
+                  <span class="material-icons" v-else>
+                    favorite_border
+                  </span>
+                  </a>
                 </div>
               </div>
               <div class="d-flex justify-content-between">
                 <div class="od">{{ item.DepartureStopNameZh }}-{{ item.DestinationStopNameZh }}</div>
-                <div class="city">{{ city }}</div>
+                <div class="city"><span v-if="item.City">{{ $filters.replaceCity(item.City) }}</span></div>
               </div>
-            </li> -->
+            </li>
           </ul>
         </div>
       </div>
@@ -72,6 +81,12 @@ export default {
       isLoading: false,
       locationMarkerID: '',
       optiondata: [],
+      selectStationName: '',
+      selectStationData: [],
+      selectStationRouteID: [],
+      selectRouteData: [],
+      buslikes: [],
+      buslikesId: [],
       city: 'Taipei',
       cityList
     }
@@ -95,21 +110,124 @@ export default {
       })
     },
     getAllStationFromCity () {
-      this.isLoading = true
-      const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Station/City/${this.city}?$select=StationUID%2CStationID%2CStationName%2CStationPosition%2CStationAddress&$format=JSON`
+      const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Station/City/${this.city}?$select=StationName&$format=JSON`
       this.axios.get(url,
         {
           headers: this.$getAuthorizationHeader()
         }
       )
         .then((response) => {
-          console.log(response.data)
-          this.optiondata = response.data
-          this.isLoading = false
+          // console.log(response.data)
+          this.optiondata = response.data.map((x) => { return x.StationName.Zh_tw })
+          this.optiondata = this.optiondata.filter((value, index, array) => array.indexOf(value) === index)
+          this.getStationData()
         })
         .catch((err) => {
           console.log(err)
         })
+    },
+    getStationData () {
+      const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Station/City/${this.city}?$filter=StationName%2FZh_tw%20eq%20'${this.selectStationName}'&$format=JSON`
+      this.axios.get(url,
+        {
+          headers: this.$getAuthorizationHeader()
+        }
+      )
+        .then((response) => {
+          this.selectStationData = response.data
+          const tempArr = []
+          response.data.forEach((x) => {
+            tempArr.push(x.Stops.map((x) => { return x.RouteUID }))
+          })
+          this.selectStationRouteID = [].concat(...tempArr)
+          this.selectStationRouteID = this.selectStationRouteID.filter((value, index, array) => array.indexOf(value) === index)
+          console.log(this.selectStationRouteID)
+          this.getRouteData()
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    getRouteData () {
+      // console.log(this.selectStationName)
+      const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City/${this.city}?$format=JSON`
+      this.axios.get(url,
+        {
+          headers: this.$getAuthorizationHeader()
+        }
+      )
+        .then((response) => {
+          // console.log(response.data)
+          this.selectRouteData = response.data.filter((x) => {
+            if (this.selectStationRouteID.includes(x.RouteUID)) return x
+          })
+          console.log(this.selectRouteData)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    toRouteDetail (item) {
+      console.log(item)
+      if (event.target.tagName !== 'SPAN') {
+        const param = {
+          city: item.City,
+          route: item.RouteName.Zh_tw,
+          routeUID: item.RouteUID,
+          direction: 0,
+          LatLon: [this.selectStationData[0].StationPosition.PositionLat, this.selectStationData[0].StationPosition.PositionLon]
+        }
+        const qStr = JSON.stringify(param)
+        this.$router.push(`/BusSearch/${qStr}`)
+      }
+    },
+    getLikes () {
+      // console.log(localStorage.getItem('likelist'))
+      const likeStr = localStorage.getItem('busLikes') ? localStorage.getItem('busLikes') : '[]'
+      this.buslikes = JSON.parse(likeStr)
+      this.buslikesId = this.buslikes.map(x => { return x.routeUID })
+      console.log(this.buslikesId)
+    },
+    updateLikes (router) {
+      const res = {
+        data: {
+          data: {},
+          message: '收藏',
+          success: true
+        }
+      }
+      if (this.buslikesId.includes(router.RouteUID)) {
+        this.buslikes.splice(this.buslikes.map(x => { return x.routeUID }).indexOf(router.RouteUID), 1)
+        this.buslikesId.splice(this.buslikesId.indexOf(router.RouteUID), 1)
+        this.$httpMessageState(res, '移除收藏')
+      } else {
+        this.buslikes.push({
+          routeUID: router.RouteUID,
+          routeName: router.RouteName.Zh_tw,
+          start: router.DepartureStopNameZh,
+          end: router.DestinationStopNameZh,
+          city: router.City
+        })
+        this.buslikesId.push(router.RouteUID)
+        this.$httpMessageState(res, '加入收藏')
+      }
+      // console.log(this.buslikes)
+    },
+    saveLocalStorage (data) {
+      const datastr = JSON.stringify(data)
+      try {
+        localStorage.setItem('busLikes', datastr)
+      } catch (e) {
+        return false
+      }
+    }
+  },
+  watch: {
+    buslikes: {
+      handler (n, o) {
+        this.saveLocalStorage(this.buslikes)
+      },
+      deep: true
     }
   },
   mounted () {
@@ -133,6 +251,7 @@ export default {
       document.querySelector('.gps-icon').classList.remove('active')
     })
     this.locateGPS()
+    this.getLikes()
     this.getAllStationFromCity()
   }
 }

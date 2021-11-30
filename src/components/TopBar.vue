@@ -25,7 +25,7 @@
   <div class="offcanvas-body p-0">
     <ul class="d-flex flex-column p-0">
         <li class="canvas-link" :class="{ active: $route.name === 'nearStation'}"><router-link to="/NearbyStation">附近站牌</router-link></li>
-        <li class="canvas-link" :class="{ active: $route.name === 'stopSearch'}">站點查詢</li>
+        <li class="canvas-link" :class="{ active: $route.name === 'stopSearch'}"><router-link to="/StopSearch">站點查詢</router-link></li>
         <li class="canvas-link" :class="{ active: $route.name === 'likeBus'}"><router-link to="/LikeBus">收藏站牌</router-link></li>
     </ul>
   </div>

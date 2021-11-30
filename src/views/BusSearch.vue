@@ -269,7 +269,7 @@ export default {
     backToRouteSeachList () {
       // console.log(this.prevRoute)
       if (this.prevRoute) {
-        if (this.prevRoute.name !== 'nearStation' && this.prevRoute.name !== 'busSearch' && this.prevRoute.name !== 'likeBus') {
+        if (this.prevRoute.name !== 'nearStation' && this.prevRoute.name !== 'busSearch' && this.prevRoute.name !== 'likeBus' && this.prevRoute.name !== 'stopSearch') {
           document.querySelector('.route-search-area').classList.add('active')
           document.querySelector('.route-stop-area').classList.remove('active')
         } else {

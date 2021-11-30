@@ -4,7 +4,7 @@
   </Loading>
   <div class="h-100 d-flex flex-column">
     <div class="bread-bar">
-      <ol class="breadcrumb m-0 d-md-flex d-none">
+      <ol class="breadcrumb m-0">
         <li class="breadcrumb-item"><a href="#">首頁</a></li>
         <li class="breadcrumb-item active" aria-current="page">收藏站牌</li>
       </ol>
