@@ -3,13 +3,16 @@
     <div class="bread-bar">
       <ol class="breadcrumb m-0 d-md-flex d-none">
         <li class="breadcrumb-item"><a href="#">首頁</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ city }}</li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <span v-if="city">{{ $filters.replaceCity(city) }}</span>
+        </li>
       </ol>
       <div class="mobile-control-bar  d-flex d-md-none">
         <div class="city">
           <span class="material-icons">
           location_on
-          </span>{{ city }}
+          </span>
+          <span v-if="city">{{ $filters.replaceCity(city) }}</span>
         </div>
         <div class="tool">
           <div class="map" :class="{ active: mobileTool === 'map' }"
@@ -37,18 +40,24 @@
         <div class="route-search-body">
           <ul class="route-list">
             <li class="route-list-item" v-for="item in routeList" :key="item.RouteUID"
-            @click="toRouteDetail(item.RouteName.Zh_tw, item.RouteUID)">
+            @click="toRouteDetailClick(item)">
               <div class="d-flex justify-content-between">
                 <div class="title">{{ item.RouteName.Zh_tw }}</div>
                 <div class="icon">
-                  <a><span class="material-icons">
-                  favorite_border
-                  </span></a>
+                  <a href="#"
+                  @click.prevent="updateLikes(item)">
+                    <span class="material-icons love" v-if="buslikesId.includes(item.RouteUID)">
+                    favorite
+                    </span>
+                    <span class="material-icons" v-else>
+                    favorite_border
+                    </span>
+                  </a>
                 </div>
               </div>
               <div class="d-flex justify-content-between">
                 <div class="od">{{ item.DepartureStopNameZh }}-{{ item.DestinationStopNameZh }}</div>
-                <div class="city">{{ city }}</div>
+                <div class="city"><span v-if="city">{{ $filters.replaceCity(city) }}</span></div>
               </div>
             </li>
           </ul>
@@ -58,7 +67,8 @@
         <a href="#" class="return"
         @click.prevent="backToRouteSeachList()">
         <span class="material-icons">chevron_left</span>
-        返回搜尋</a>
+        返回搜尋
+        </a>
         <div class="refresh-bar">
           <div class="time">{{ refreshTime }} 秒後更新</div>
           <a href="#" class="refresh ms-auto"
@@ -70,6 +80,15 @@
         <div class="route-stop-header">
           <div class="route-name">
           {{ selectRoute }}
+          <a href="#"
+          @click.prevent="updateLikes_(selectRoute, selectRouteUID, stopOfRouteBack[stopOfRouteBack.length - 1].StopName.Zh_tw, stopOfRouteTo[stopOfRouteTo.length - 1].StopName.Zh_tw, city)">
+          <span class="material-icons love" v-if="buslikesId.includes(selectRouteUID)">
+            favorite
+          </span>
+          <span class="material-icons" v-else>
+            favorite_border
+          </span>
+          </a>
           </div>
         </div>
         <ul class="nav nav-tabs" role="tablist">
@@ -197,12 +216,16 @@ export default {
       selectRouteUID: '',
       toOrBack: 'to',
       routeGeometry: [],
+      routeLayer: null,
       locationMarkerID: '',
       walkBusMarker: [],
       stopMarker: [],
       mobileTool: 'route',
       timer: null,
-      refreshTime: 0
+      refreshTime: 0,
+      buslikes: [],
+      buslikesId: [],
+      prevRoute: null
     }
   },
   methods: {
@@ -221,7 +244,14 @@ export default {
           console.log(err)
         })
     },
+    toRouteDetailClick (item) {
+      if (event.target.tagName !== 'SPAN') {
+        this.toRouteDetail(item.RouteName.Zh_tw, item.RouteUID)
+        this.fitBounds()
+      }
+    },
     toRouteDetail (routeName, routeUID) {
+      // console.log('test', event.target.tagName)
       document.querySelector('.route-search-area').classList.remove('active')
       document.querySelector('.route-stop-area').classList.add('active')
       this.selectRoute = routeName
@@ -230,8 +260,18 @@ export default {
       this.getStopOfRoute()
     },
     backToRouteSeachList () {
-      document.querySelector('.route-search-area').classList.add('active')
-      document.querySelector('.route-stop-area').classList.remove('active')
+      // console.log(this.prevRoute)
+      if (this.prevRoute) {
+        if (this.prevRoute.name !== 'nearStation' && this.prevRoute.name !== 'busSearch' && this.prevRoute.name !== 'likeBus') {
+          document.querySelector('.route-search-area').classList.add('active')
+          document.querySelector('.route-stop-area').classList.remove('active')
+        } else {
+          this.$router.go(-1)
+        }
+      } else {
+        document.querySelector('.route-search-area').classList.add('active')
+        document.querySelector('.route-stop-area').classList.remove('active')
+      }
     },
     getStopOfRoute () {
       if (this.timer) clearInterval(this.timer)
@@ -333,7 +373,7 @@ export default {
         }
       )
         .then((response) => {
-          console.log(response.data)
+          // console.log(response.data)
           this.routeGeometry = response.data
           // continue
           openStreetMap.eachLayer((layer) => {
@@ -342,6 +382,9 @@ export default {
                 openStreetMap.removeLayer(layer)
               }
               if (layer instanceof $L.Popup) {
+                openStreetMap.removeLayer(layer)
+              }
+              if (layer.toGeoJSON) {
                 openStreetMap.removeLayer(layer)
               }
             }
@@ -365,6 +408,7 @@ export default {
         try {
           layer = $L.geoJSON(geoJsonFeature, { style: geoStyle }).addTo(openStreetMap)
           layer.addData(geoJsonFeature)
+          this.routeLayer = layer
           this.addRouteMarker()
         } catch (e) {
           console.log(e)
@@ -541,10 +585,27 @@ export default {
         this.selectRouteUID = pjson.routeUID
         this.toOrBack = pjson.direction === 0 ? 'to' : 'back'
         this.toRouteDetail(this.selectRoute, this.selectRouteUID)
-        this.panToPosition(pjson.LatLon[0], pjson.LatLon[1])
+        if (pjson.LatLon.length > 0) {
+          this.panToPosition(pjson.LatLon[0], pjson.LatLon[1])
+        } else {
+          this.fitBounds()
+        }
         // console.log(pjson.LatLon[0], pjson.LatLon[1])
       }
       // console.log(pjson)
+    },
+    fitBounds () {
+      setTimeout(() => {
+        console.log('setTimeOut')
+        // let geoJsonFeature = null
+        // this.routeGeometry.forEach((route) => {
+        //   const wicket = new Wkt.Wkt()
+        //   wicket.read(route.Geometry)
+        //   geoJsonFeature = wicket.toJson()
+        //   console.log(geoJsonFeature)
+        // })
+        openStreetMap.fitBounds(this.routeLayer.getBounds())
+      }, 500)
     },
     timeCountDown (time) {
       let timeRemaining = time
@@ -558,7 +619,64 @@ export default {
           this.getStopOfRoute()
         }
       }, 1000)
+    },
+    getLikes () {
+      // console.log(localStorage.getItem('likelist'))
+      const likeStr = localStorage.getItem('busLikes') ? localStorage.getItem('busLikes') : '[]'
+      this.buslikes = JSON.parse(likeStr)
+      this.buslikesId = this.buslikes.map(x => { return x.routeUID })
+    },
+    updateLikes_ (routeName, routeUID, startStop, endStop, city) {
+      if (this.buslikesId.includes(routeUID)) {
+        this.buslikes.splice(this.buslikes.map(x => { return x.routeUID }).indexOf(routeUID), 1)
+        this.buslikesId.splice(this.buslikesId.indexOf(routeUID), 1)
+      } else {
+        this.buslikes.push({
+          routeUID: routeUID,
+          routeName: routeName,
+          start: startStop,
+          end: endStop,
+          city: city
+        })
+        this.buslikesId.push(routeUID)
+      }
+    },
+    updateLikes (router) {
+      if (this.buslikesId.includes(router.RouteUID)) {
+        this.buslikes.splice(this.buslikes.map(x => { return x.routeUID }).indexOf(router.RouteUID), 1)
+        this.buslikesId.splice(this.buslikesId.indexOf(router.RouteUID), 1)
+      } else {
+        this.buslikes.push({
+          routeUID: router.RouteUID,
+          routeName: router.RouteName.Zh_tw,
+          start: router.DepartureStopNameZh,
+          end: router.DestinationStopNameZh,
+          city: this.city
+        })
+        this.buslikesId.push(router.RouteUID)
+      }
+    },
+    saveLocalStorage (data) {
+      const datastr = JSON.stringify(data)
+      try {
+        localStorage.setItem('busLikes', datastr)
+      } catch (e) {
+        return false
+      }
     }
+  },
+  watch: {
+    buslikes: {
+      handler (n, o) {
+        this.saveLocalStorage(this.buslikes)
+      },
+      deep: true
+    }
+  },
+  beforeRouteEnter (to, from, next) {
+    next(vm => {
+      vm.prevRoute = from
+    })
   },
   mounted () {
     // this.city = this.$route.params.city
@@ -586,6 +704,7 @@ export default {
       func()
     })
     this.getParam()
+    this.getLikes()
   },
   unmounted () {
     if (this.timer) clearInterval(this.timer)

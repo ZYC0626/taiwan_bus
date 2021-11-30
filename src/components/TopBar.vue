@@ -6,9 +6,9 @@
         <img src="@/assets/images/LOGO.png" alt="LOGO" height="40">
       </a>
       <ul class="cus_nav-link m-auto d-md-flex d-none">
-        <li class="cus_nav-link-item"><router-link to="/NearbyStation">附近站牌</router-link></li>
+        <li class="cus_nav-link-item" :class="{ active: $route.name === 'nearStation'}"><router-link to="/NearbyStation">附近站牌</router-link></li>
         <li class="cus_nav-link-item disabled">站點查詢</li>
-        <li class="cus_nav-link-item disabled">收藏站牌</li>
+        <li class="cus_nav-link-item" :class="{ active: $route.name === 'likeBus'}"><router-link to="/LikeBus">收藏站牌</router-link></li>
       </ul>
       <div class="d-block d-md-none">
         <a data-bs-toggle="offcanvas" href="#offcanvasExample"><img src="@/assets/images/sideMenu.svg" height="24" alt="menu"></a>
@@ -22,9 +22,9 @@
   </div>
   <div class="offcanvas-body p-0">
     <ul class="d-flex flex-column p-0">
-        <li class="canvas-link"><router-link to="/NearbyStation">附近站牌</router-link></li>
+        <li class="canvas-link" :class="{ active: $route.name === 'nearStation'}"><router-link to="/NearbyStation">附近站牌</router-link></li>
         <li class="canvas-link disabled">站點查詢</li>
-        <li class="canvas-link disabled">收藏站牌</li>
+        <li class="canvas-link" :class="{ active: $route.name === 'likeBus'}"><router-link to="/LikeBus">收藏站牌</router-link></li>
     </ul>
   </div>
 </div>

@@ -30,7 +30,13 @@
         }
     }
     &.disabled {
-        color: #888888;
+        color: #c4c4c4;
+    }
+    &.active {
+        a {
+            color: #D08181;
+            font-weight: 700;
+        }
     }
 }
 .canvas-link {
@@ -49,7 +55,13 @@
         border-bottom: 1px solid #e7e7e7;
     }
     &.disabled {
-        color: #888888;
+        color: #c4c4c4;
+    }
+    &.active {
+        a {
+            color: #D08181;
+            font-weight: 700;
+        }
     }
 }
 .truncateText {
@@ -374,6 +386,12 @@
     .sub {
         font-size: 12px;
     }
+    a {
+        color: #888888;
+    }
+}
+.material-icons.love {
+    color: #d08181 !important;
 }
 .route-stop-content {
     overflow-y: scroll;

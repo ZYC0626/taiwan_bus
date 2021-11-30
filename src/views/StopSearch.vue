@@ -1,4 +1,7 @@
 <template>
+  <Loading :active="isLoading"
+  :z-index="2000">
+  </Loading>
   <div class="h-100 d-flex flex-column">
     <div class="bread-bar">
       <ol class="breadcrumb m-0 d-md-flex d-none">
@@ -39,6 +42,7 @@
 </template>
 <script>
 import $L from 'leaflet'
+import cityList from '@/assets/CityList.json'
 // import Wkt from 'wicket'
 let openStreetMap = {}
 
@@ -58,7 +62,10 @@ const positionIcon = new $L.Icon({
 export default {
   data () {
     return {
-      locationMarkerID: ''
+      isLoading: false,
+      locationMarkerID: '',
+      allCityStationList: [],
+      cityList
     }
   },
   methods: {

@@ -60,9 +60,9 @@
         <div class="estimate-near-body">
           <ul class="estimate-near-list">
             <li class="estimate-near-list-item" v-for="item in EstimateNearList" :key="item.StopUID"
-            @click="toRouteDetail(item)">
-              <!-- <div class="time">{{ $filters.toMinute(item.EstimateTime) }} 分</div> -->
-              <div class="time" :class="{ active : item.EstimateTime <= 180 , 'disconnect': item.StopStatus !== 0}">
+            >
+              <div class="time" :class="{ active : item.EstimateTime <= 180 , 'disconnect': item.StopStatus !== 0}"
+              @click="toRouteDetail(item)">
                 <span v-if="item.StopStatus === 0">
                   <span v-if="item.EstimateTime <= 180 && item.PlateNumb">進站中</span>
                   <span v-else-if="item.EstimateTime <= 180">即將進站</span>
@@ -73,16 +73,23 @@
                 <span v-else-if="item.StopStatus === 3">末班車已過</span>
                 <span v-else>今日未營運</span>
               </div>
-              <div class="info">
+              <div class="info"
+              @click="toRouteDetail(item)">
                 <div class="title">{{ item.RouteName.Zh_tw }}</div>
                 <div class="way" v-if="item.Direction === 0">往 {{ item.DestinationStopNameZh }}</div>
                 <div class="way" v-else>往 {{ item.DepartureStopNameZh  }}</div>
               </div>
               <div class="icon ms-auto">
-                <a><span class="material-icons">
-                favorite_border
-                </span></a>
-                {{ item.City }}
+                <a href="#"
+                @click.prevent="updateLikes(item)">
+                <span class="material-icons love" v-if="buslikesId.includes(item.RouteUID)">
+                  favorite
+                </span>
+                <span class="material-icons" v-else>
+                  favorite_border
+                </span>
+                </a>
+                <span v-if="item.City">{{ $filters.replaceCity(item.City) }}</span>
               </div>
             </li>
           </ul>
@@ -130,7 +137,9 @@ export default {
       selectStationName: '',
       selectStationUID: '',
       selectStationLatLon: [],
-      mobileTool: 'station'
+      mobileTool: 'station',
+      buslikes: [],
+      buslikesId: []
     }
   },
   methods: {
@@ -364,6 +373,45 @@ export default {
       }
       const qStr = JSON.stringify(param)
       this.$router.push(`/BusSearch/${qStr}`)
+    },
+    getLikes () {
+      // console.log(localStorage.getItem('likelist'))
+      const likeStr = localStorage.getItem('busLikes') ? localStorage.getItem('busLikes') : '[]'
+      this.buslikes = JSON.parse(likeStr)
+      this.buslikesId = this.buslikes.map(x => { return x.routeUID })
+      console.log(this.buslikesId)
+    },
+    updateLikes (router) {
+      if (this.buslikesId.includes(router.RouteUID)) {
+        this.buslikes.splice(this.buslikes.map(x => { return x.routeUID }).indexOf(router.RouteUID), 1)
+        this.buslikesId.splice(this.buslikesId.indexOf(router.RouteUID), 1)
+      } else {
+        this.buslikes.push({
+          routeUID: router.RouteUID,
+          routeName: router.RouteName.Zh_tw,
+          start: router.DepartureStopNameZh,
+          end: router.DestinationStopNameZh,
+          city: router.City
+        })
+        this.buslikesId.push(router.RouteUID)
+      }
+      // console.log(this.buslikes)
+    },
+    saveLocalStorage (data) {
+      const datastr = JSON.stringify(data)
+      try {
+        localStorage.setItem('busLikes', datastr)
+      } catch (e) {
+        return false
+      }
+    }
+  },
+  watch: {
+    buslikes: {
+      handler (n, o) {
+        this.saveLocalStorage(this.buslikes)
+      },
+      deep: true
     }
   },
   mounted () {
@@ -391,6 +439,7 @@ export default {
       func()
     })
     this.locateGPS()
+    this.getLikes()
   }
 }
 </script>
