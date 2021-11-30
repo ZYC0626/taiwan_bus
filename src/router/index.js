@@ -27,6 +27,7 @@ const routes = [
       },
       {
         path: 'StopSearch/',
+        name: 'stopSearch',
         component: () => import('../views/StopSearch.vue')
       }
     ]

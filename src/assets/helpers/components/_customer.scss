@@ -720,3 +720,30 @@
         }
     }
 }
+
+.toast {
+    width: 250px;
+    border-radius: 12px;
+    padding: 0 12px;
+}
+.toast-position{
+    z-index: 1080;
+    top: 15%;
+    @include media-breakpoint-up(md) {
+        top: 15%;
+    }
+}
+.toast-border{
+    border-left: 0px solid transparent;
+    // border-radius: 12px;
+}
+.toast-content{
+    .title{
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+    }
+    .content{
+        font-size: 0.6rem;
+        color: gray;
+    }
+}

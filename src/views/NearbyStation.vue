@@ -382,9 +382,17 @@ export default {
       console.log(this.buslikesId)
     },
     updateLikes (router) {
+      const res = {
+        data: {
+          data: {},
+          message: '收藏',
+          success: true
+        }
+      }
       if (this.buslikesId.includes(router.RouteUID)) {
         this.buslikes.splice(this.buslikes.map(x => { return x.routeUID }).indexOf(router.RouteUID), 1)
         this.buslikesId.splice(this.buslikesId.indexOf(router.RouteUID), 1)
+        this.$httpMessageState(res, '移除收藏')
       } else {
         this.buslikes.push({
           routeUID: router.RouteUID,
@@ -394,6 +402,7 @@ export default {
           city: router.City
         })
         this.buslikesId.push(router.RouteUID)
+        this.$httpMessageState(res, '加入收藏')
       }
       // console.log(this.buslikes)
     },

@@ -9,6 +9,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import 'bootstrap'
 import $getAuthorizationHeader from './methods/getAuthorizationHeader'
 import { toMinute, replaceCity } from './methods/filters'
+import $httpMessageState from './methods/pushMessageState'
 // createApp(App).use(router).mount('#app')
 const app = createApp(App)
 app.use(VueAxios, axios)
@@ -18,5 +19,7 @@ app.config.globalProperties.$filters = {
   toMinute,
   replaceCity
 }
+// 此函式的用途是整合 Ajax 的錯誤事件，統一整理發送給予 Toast 處理
+app.config.globalProperties.$httpMessageState = $httpMessageState
 app.component('Loading', Loading)
 app.mount('#app')

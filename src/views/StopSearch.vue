@@ -12,7 +12,14 @@
     <div class="map-wrap">
       <div class="route-search-area active">
         <div class="route-search-header">
-          <input type="search" class="form-control" id="stationName" placeholder="想去哪裡?">
+          <select class="form-select mb-2" v-model="city"
+          @change="getAllStationFromCity()">
+            <option :value="city.City" v-for="city in cityList" :key="city.City">{{ city.CityName }}</option>
+          </select>
+          <input list="datalistOptions" class="form-control" id="stationName" placeholder="想去哪裡?">
+          <datalist id="datalistOptions">
+            <option :value="option.StationName.Zh_tw" v-for="option in optiondata" :key="option.StationUID"></option>
+          </datalist>
         </div>
         <div class="route-search-body">
           <ul class="route-list">
@@ -64,7 +71,8 @@ export default {
     return {
       isLoading: false,
       locationMarkerID: '',
-      allCityStationList: [],
+      optiondata: [],
+      city: 'Taipei',
       cityList
     }
   },
@@ -85,6 +93,23 @@ export default {
         marker.addTo(openStreetMap)
         this.locationMarkerID = marker._leaflet_id
       })
+    },
+    getAllStationFromCity () {
+      this.isLoading = true
+      const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Station/City/${this.city}?$select=StationUID%2CStationID%2CStationName%2CStationPosition%2CStationAddress&$format=JSON`
+      this.axios.get(url,
+        {
+          headers: this.$getAuthorizationHeader()
+        }
+      )
+        .then((response) => {
+          console.log(response.data)
+          this.optiondata = response.data
+          this.isLoading = false
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
   },
   mounted () {
@@ -108,6 +133,7 @@ export default {
       document.querySelector('.gps-icon').classList.remove('active')
     })
     this.locateGPS()
+    this.getAllStationFromCity()
   }
 }
 </script>

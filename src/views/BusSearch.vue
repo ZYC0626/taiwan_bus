@@ -79,6 +79,12 @@
       </div>
         <div class="route-stop-header">
           <div class="route-name">
+          <a href="#"
+          @click.prevent="shareLink()">
+          <span class="material-icons">
+          link
+          </span>
+          </a>
           {{ selectRoute }}
           <a href="#"
           @click.prevent="updateLikes_(selectRoute, selectRouteUID, stopOfRouteBack[stopOfRouteBack.length - 1].StopName.Zh_tw, stopOfRouteTo[stopOfRouteTo.length - 1].StopName.Zh_tw, city)">
@@ -214,6 +220,7 @@ export default {
       stopOfRouteBack: [],
       selectRoute: '',
       selectRouteUID: '',
+      selectLatlon: [],
       toOrBack: 'to',
       routeGeometry: [],
       routeLayer: null,
@@ -540,6 +547,7 @@ export default {
     panToPosition (Lat, Lng) {
       // console.log(Lat, Lng)
       openStreetMap.setView([Lat, Lng], 18)
+      this.selectLatlon = [Lat, Lng]
       // console.log(window.innerWidth)
       if (window.innerWidth < 768) {
         this.showArea('map')
@@ -597,13 +605,6 @@ export default {
     fitBounds () {
       setTimeout(() => {
         console.log('setTimeOut')
-        // let geoJsonFeature = null
-        // this.routeGeometry.forEach((route) => {
-        //   const wicket = new Wkt.Wkt()
-        //   wicket.read(route.Geometry)
-        //   geoJsonFeature = wicket.toJson()
-        //   console.log(geoJsonFeature)
-        // })
         openStreetMap.fitBounds(this.routeLayer.getBounds())
       }, 500)
     },
@@ -627,9 +628,17 @@ export default {
       this.buslikesId = this.buslikes.map(x => { return x.routeUID })
     },
     updateLikes_ (routeName, routeUID, startStop, endStop, city) {
+      const res = {
+        data: {
+          data: {},
+          message: '收藏',
+          success: true
+        }
+      }
       if (this.buslikesId.includes(routeUID)) {
         this.buslikes.splice(this.buslikes.map(x => { return x.routeUID }).indexOf(routeUID), 1)
         this.buslikesId.splice(this.buslikesId.indexOf(routeUID), 1)
+        this.$httpMessageState(res, '移除收藏')
       } else {
         this.buslikes.push({
           routeUID: routeUID,
@@ -639,12 +648,21 @@ export default {
           city: city
         })
         this.buslikesId.push(routeUID)
+        this.$httpMessageState(res, '加入收藏')
       }
     },
     updateLikes (router) {
+      const res = {
+        data: {
+          data: {},
+          message: '收藏',
+          success: true
+        }
+      }
       if (this.buslikesId.includes(router.RouteUID)) {
         this.buslikes.splice(this.buslikes.map(x => { return x.routeUID }).indexOf(router.RouteUID), 1)
         this.buslikesId.splice(this.buslikesId.indexOf(router.RouteUID), 1)
+        this.$httpMessageState(res, '移除收藏')
       } else {
         this.buslikes.push({
           routeUID: router.RouteUID,
@@ -654,6 +672,7 @@ export default {
           city: this.city
         })
         this.buslikesId.push(router.RouteUID)
+        this.$httpMessageState(res, '加入收藏')
       }
     },
     saveLocalStorage (data) {
@@ -663,6 +682,36 @@ export default {
       } catch (e) {
         return false
       }
+    },
+    shareLink () {
+      let urlStr = ''
+      urlStr += document.URL.split('#')[0]
+      const param = {
+        city: this.city,
+        route: this.selectRoute,
+        routeUID: this.selectRouteUID,
+        direction: this.toOrBack === 'to' ? 0 : 1,
+        LatLon: this.selectLatlon
+      }
+      const qStr = JSON.stringify(param)
+      urlStr += '#/BusSearch/' + qStr
+      // console.log(urlStr)
+      // copy
+      const dummy = document.createElement('input')
+      document.body.appendChild(dummy)
+      dummy.value = urlStr
+      dummy.select()
+      dummy.setSelectionRange(0, 99999)
+      document.execCommand('copy')
+      document.body.removeChild(dummy)
+      const res = {
+        data: {
+          data: {},
+          message: '分享連結',
+          success: true
+        }
+      }
+      this.$httpMessageState(res, '複製分享連結')
     }
   },
   watch: {
