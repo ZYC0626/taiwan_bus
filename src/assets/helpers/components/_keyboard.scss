@@ -1,0 +1,83 @@
+.keyboard-btn {
+	background: #d5d5d5;
+	border-radius: 10px;
+	padding: 10px;
+	text-align: center;
+}
+.keyboard-content-taipei {
+	max-width: 375px;
+	text-align: center;
+	padding: 0 18px;
+	position: relative;
+	overflow: hidden;
+	.keyboard-btn {
+		width: 57px;
+		margin: 0 5px 12px;
+	}
+}
+.keyboard-content {
+	max-width: 375px;
+	text-align: center;
+	padding: 0 18px;
+	.keyboard-btn {
+		width: 70px;
+		margin: 0 8px 12px;
+	}
+}
+
+.keyboard-btn {
+	font-size: 14px;
+	font-weight: 400;
+	width: 70px;
+	margin: 0 8px 12px;
+	&.red {
+		color: #fff;
+		background: #e87e7e;
+	}
+	&.blue {
+		color: #fff;
+		background: #3591c5;
+	}
+	&.green {
+		color: #fff;
+		background: #5cc1a9;
+	}
+	&.brown {
+		color: #fff;
+		background: #a86556;
+	}
+	&.orange {
+		color: #fff;
+		background: #eea12e;
+	}
+	&.yellow {
+		color: #fff;
+		background: #debe4e;
+	}
+	&.other {
+		color: #fff;
+		background: #283c43;
+	}
+	&.secondary {
+		color: #fff;
+		background: #888888;
+	}
+}
+
+.keyboard-moreArea {
+	background: #F5F6F6;
+	position: absolute;
+	z-index: 2;
+	width: 100%;
+	bottom: 0;
+	top: 0;
+	left: -500px;
+	transition: all .5s linear;
+	// visibility: hidden;
+	// opacity: 0;
+	// transition: visibility 0s, opacity 0.5s linear;
+	// height: 1;
+	&.active {
+		left: 0;
+	}
+}

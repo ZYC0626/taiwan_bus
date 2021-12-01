@@ -35,7 +35,7 @@
         <div class="route-search-header">
           <input type="search" class="form-control" id="routeNumber" placeholder="請輸入公車路線"
           v-model="routeKeyword"
-          @keyup="getRoute()">
+          >
         </div>
         <div class="route-search-body">
           <ul class="route-list">
@@ -62,6 +62,7 @@
             </li>
           </ul>
         </div>
+        <SearchKeyboard :city="city" v-on:emit-input="updateInput"></SearchKeyboard>
       </div>
       <div class="route-stop-area">
         <a href="#" class="return"
@@ -172,6 +173,8 @@
 <script>
 import $L from 'leaflet'
 import Wkt from 'wicket'
+import SearchKeyboard from '@/components/SearchKeyboard.vue'
+
 let openStreetMap = {}
 
 const walkBusIcon = new $L.Icon({
@@ -211,6 +214,9 @@ const positionIcon = new $L.Icon({
 //   })
 // }
 export default {
+  components: {
+    SearchKeyboard
+  },
   data () {
     return {
       city: '',
@@ -236,6 +242,10 @@ export default {
     }
   },
   methods: {
+    updateInput (str) {
+      // console.log('out', str)
+      this.routeKeyword = str
+    },
     getRoute () {
       const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City/${this.city}/${this.routeKeyword}?$top=50&$format=JSON`
       this.axios.get(url,
@@ -715,6 +725,9 @@ export default {
     }
   },
   watch: {
+    routeKeyword () {
+      this.getRoute()
+    },
     buslikes: {
       handler (n, o) {
         this.saveLocalStorage(this.buslikes)
