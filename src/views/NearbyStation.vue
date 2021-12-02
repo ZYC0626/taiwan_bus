@@ -371,7 +371,7 @@ export default {
         direction: item.Direction,
         LatLon: this.selectStationLatLon
       }
-      const qStr = JSON.stringify(param)
+      const qStr = encodeURIComponent(JSON.stringify(param))
       this.$router.push(`/BusSearch/${qStr}`)
     },
     getLikes () {

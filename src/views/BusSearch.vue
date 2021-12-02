@@ -247,7 +247,12 @@ export default {
       this.routeKeyword = str
     },
     getRoute () {
-      const url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City/${this.city}/${this.routeKeyword}?$top=50&$format=JSON`
+      let url = ''
+      if (this.city === 'Taichung' && this.routeKeyword === '專用道') {
+        url = 'https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City/Taichung?$filter=RouteName%2FZh_tw%20in%20(%22300%22%2C%22301%22%2C%22302%22%2C%22303%22%2C%22304%22%2C%22305%22%2C%22306%22%2C%22307%22%2C%22308%22%2C%22309%22%2C%22310%22)&$format=JSON'
+      } else {
+        url = `https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City/${this.city}/${this.routeKeyword}?$top=50&$format=JSON`
+      }
       this.axios.get(url,
         {
           headers: this.$getAuthorizationHeader()
@@ -596,7 +601,7 @@ export default {
     },
     getParam () {
       const pstr = '' + this.$route.params.queryString
-      const pjson = JSON.parse(pstr)
+      const pjson = JSON.parse(decodeURIComponent(pstr))
       this.city = pjson.city
       if (pjson.route && pjson.routeUID) {
         this.selectRoute = pjson.route
@@ -703,7 +708,7 @@ export default {
         direction: this.toOrBack === 'to' ? 0 : 1,
         LatLon: this.selectLatlon
       }
-      const qStr = JSON.stringify(param)
+      const qStr = encodeURIComponent(JSON.stringify(param))
       urlStr += '#/BusSearch/' + qStr
       // console.log(urlStr)
       // copy

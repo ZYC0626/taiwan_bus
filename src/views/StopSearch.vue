@@ -177,7 +177,7 @@ export default {
           direction: 0,
           LatLon: [this.selectStationData[0].StationPosition.PositionLat, this.selectStationData[0].StationPosition.PositionLon]
         }
-        const qStr = JSON.stringify(param)
+        const qStr = encodeURIComponent(JSON.stringify(param))
         this.$router.push(`/BusSearch/${qStr}`)
       }
     },

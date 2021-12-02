@@ -66,7 +66,8 @@ export default {
       const param = {
         city: city
       }
-      return JSON.stringify(param)
+      // return JSON.stringify(param)
+      return encodeURIComponent(JSON.stringify(param))
     }
   }
 }

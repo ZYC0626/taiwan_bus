@@ -147,7 +147,7 @@ export default {
           direction: 0,
           LatLon: []
         }
-        const qStr = JSON.stringify(param)
+        const qStr = encodeURIComponent(JSON.stringify(param))
         this.$router.push(`/BusSearch/${qStr}`)
       }
     }
